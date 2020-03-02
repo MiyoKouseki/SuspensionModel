@@ -12,18 +12,27 @@ from gwpy.frequencyseries import FrequencySeries
 from gwpy.timeseries import TimeSeries
 
 from miyopy import seismodel
-from miyopy.utils.trillium import selfnoise as ntr120
+from miyopy.utils.trillium import _selfnoise as ntr120
+from miyopy.utils.trillium import Trillium 
 from miyopy.utils.lvdt import noise as nlvdt
 from miyopy.utils.susmodel import TypeA
 from miyopy.utils.pycontrol import tf
 
 
 nominal     = True
+nominal     = 'sc2_1'
+if nominal=='sc2_1':
+    sc = True
+    gif_noise = True
+else:
+    sc = False
+    gif_noise =False
+    
 use_oplev   = False
 use_arm     = True
 plot_req    = False
 plot_noctrl = False
-sc = False
+
 
 
 # Actual oltf
@@ -55,13 +64,32 @@ _freq = np.logspace(0,4,1000) # re-define
 # ------------------------------------------------------------
 # Seismic Noise
 # ------------------------------------------------------------
-if nominal:    
-    gnd_vel = seismodel.kagra_seis('H',99)
-    tm_oplev = None
-    freq = gnd_vel.frequencies.value
-    omega = 2.0*np.pi*freq
-    gnd  = gnd_vel/(2.0*np.pi*freq)
-    df = gnd.df.value    
+if nominal:
+    if nominal in ['sc2_1','sc2_0']:
+        gnd_gif = FrequencySeries.read('{0}_gif.hdf5'.format(nominal))
+        gnd_seis = FrequencySeries.read('{0}_diff.hdf5'.format(nominal))
+        gnd_seis = gnd_seis/(2.0*np.pi*gnd_seis.frequencies.value)
+        if False:
+            gnd_seis = gnd_seis.crop(0.1)
+            gnd_gif = gnd_gif.crop(0,0.1)
+            gnd_seis = gnd_seis.append(gnd_gif)
+        gnd = gnd_gif
+        df = gnd.df.value                    
+        gnd = gnd.crop(df)
+        freq = gnd.frequencies.value
+        omega = 2.0*np.pi*freq
+        if use_arm:
+            xarm = FrequencySeries.read('{0}_xarm.hdf5'.format(nominal))
+            xarm = xarm.crop(df)
+    else:
+        gnd_vel = seismodel.kagra_seis('H',99)
+        #print(1/gnd_vel.df)
+        #exit()
+        tm_oplev = None
+        freq = gnd_vel.frequencies.value
+        omega = 2.0*np.pi*freq
+        gnd  = gnd_vel/(2.0*np.pi*freq)
+        df = gnd.df.value    
 else:    
     start = 'Sep 03 2019 11:50:00 JST' # w/ SC 
     end   = 'Sep 03 2019 12:20:00 JST' # w/ SC
@@ -103,21 +131,26 @@ else:
         lam = 1064e-9 # m 
         xarm = xarm*3000.0/(c/lam)*1e6
         
-    #print data
+#print data
 # ------------------------------------------------------------    
 # Feedback Sensor Noise
 # ------------------------------------------------------------
 # LVDT
-nlvdt = nlvdt.interpolate(df).crop(df,16+df)
-
+freq_max = freq[-1]
+nlvdt = nlvdt.interpolate(df).crop(df,freq_max+1.5*df)
+nlvdt.override_unit(gnd.unit)
+omega_nlvdt = 2.0*np.pi*nlvdt.frequencies.value
 # Seismometer
-nseis = ntr120(trillium='120QA',psd='ASD',unit='disp')*1e6
+trillium = Trillium('120QA')
+nseis = trillium.selfnoise(trillium='120QA',psd='ASD',unit='m')*1e6
+#
+nfreq = FrequencySeries(2.2*np.pi*1e-3/omega,frequencies=freq,unit=gnd.unit)
 
 # ------------------------------------------------------------
 # Servo Filter
 # ------------------------------------------------------------
 # Read servo filter from .mat file. 
-prefix = '/Users/miyo/Dropbox/Git/SuspensionModel/model/typeA/'
+prefix = '/Users/miyo/Git/SuspensionModel/model/typeA/'
 matfile = prefix + 'servo/servoIPL.mat'
 #print matfile
 mat_dict = loadmat(matfile,struct_as_record=False)
@@ -177,24 +210,23 @@ H_gnd2tm_noctrl = tf(H_gnd2tm_noctrl,omega)*(1j*omega)**2
 #exit()
 ff_factor = 1.
 if sc:
-    #sc_factor = 1./5
-    sc_factor = 1./10
+    sc_factor = 1./20
 else:
     sc_factor = 1.
 H_gndsus2tm  = tf(H_gndsus2tm,omega)*(1j*omega)**2*ff_factor
 H_gndsens2tm = tf(H_gndsens2tm,omega)*sc_factor
-H_nlvdt2tm = tf(H_nlvdt2tm,omega)
+H_nlvdt2tm = tf(H_nlvdt2tm,omega_nlvdt)
 
 # ------------------------------------------------------------
 # Noisebudget of TM motion
 # ------------------------------------------------------------
 print('Plot Noisebudget of TM motion')
-total = np.sqrt( \
-        (gnd*(H_gndsus2tm + H_gndsens2tm))**2 \
-        )
-fig,ax = plt.subplots(1,1,figsize=(8,8))
+total = np.sqrt(
+    (gnd*H_gndsus2tm.abs())**2 + (gnd*H_gndsens2tm.abs())**2 + (nlvdt*H_nlvdt2tm.abs())**2 #+ nfreq**2
+    )
+fig,ax = plt.subplots(1,1,figsize=(6,6))
 ax.set_title('ETMX {0} Motion'.format(sensor_name))
-ax.loglog(gnd,label='Seismic Noise',color='black',linewidth=2,alpha=1,zorder=1)
+#ax.loglog(gnd,label='Seismic Noise',color='black',linewidth=2,alpha=1,zorder=1)
 #ax.loglog(gnd.rms(),color='black',linestyle='dashdot',linewidth=2,zorder=1)
 total.name='total'
 if sc:
@@ -202,18 +234,24 @@ if sc:
     #total.abs().write('total_wsc.hdf5')
 else:
     pass
-    #total.abs().write('total_wosc.hdf5')    
-ax.loglog(total.abs(),label='Sum',color='r',linewidth=3,alpha=0.8,zorder=1)
-ax.loglog(total.abs().rms(),color='r',linewidth=2,linestyle='dashdot',zorder=1)
-ax.loglog((gnd*H_gndsus2tm).abs(),'--',label='Seismic Noise (Suspension Contrib.)',linewidth=2)
-ax.loglog((gnd*H_gndsens2tm).abs(),'--',label='Seismic Noise (Sensor Contrib.)',linewidth=2)
+    #total.abs().write('total_wosc.hdf5')
+#ax.loglog((nlvdt).abs(),label='nlvdt',color='k',linewidth=3,alpha=0.8,zorder=1)
+if use_arm:
+    ax.loglog(xarm,label='Measurement',color='k',linewidth=3,zorder=1)    
+ax.loglog(total.abs(),label='Total',color='r',linewidth=3,alpha=0.8,zorder=10)
+#ax.loglog(total.abs().rms(),color='r',linewidth=2,linestyle='dashdot',zorder=1)
+#ax.loglog((gnd*H_gndsus2tm).abs(),'--',label='Seismic Noise (Suspension Contrib.)',linewidth=2)
+#ax.loglog((gnd*H_gndsens2tm).abs(),'--',label='Seismic Noise (Sensor Contrib.)',linewidth=2)
 ax.set_ylim(1e-5,2e1)
-ax.set_xlim(4e-2,1e1)
+ax.set_xlim(1e-2,1e1)
 #ax.loglog((nlvdt*H_nlvdt2tm).abs(),'--',label='Sensor Noise',linewidth=2)
+ax.loglog(nlvdt*H_nlvdt2tm.abs(),label='LVDT noise',linewidth=2,alpha=0.8,zorder=1)
+#ax.loglog(nfreq,label='Freq. noise',linewidth=2,alpha=0.8)
+ax.loglog(np.sqrt((gnd*H_gndsus2tm.abs())**2+(gnd*H_gndsens2tm.abs())**2).abs(),label='Seismic noise',linewidth=2,alpha=0.8,zorder=1)
+
 if use_oplev:
     ax.loglog(tm_oplev,label='TM oplev',color='m',linewidth=3,zorder=1)
-if use_arm and not nominal:
-    ax.loglog(xarm,label='xarm',color='m',linewidth=3,zorder=1)    
+#if use_arm and not nominal:
 if plot_noctrl:
     ax.loglog((gnd*H_gnd2tm_noctrl).abs(),label='No Control',color='gray',linewidth=2)
     ax.loglog((gnd*H_gnd2tm_noctrl).abs().rms(),color='gray',linewidth=2,linestyle='--')
@@ -241,7 +279,7 @@ gs = GridSpec(2, 1, height_ratios=[3, 1])
 ax2 = fig.add_subplot(gs[1])
 ax = fig.add_subplot(gs[0],sharex=ax2)
 ax.set_title('Ground to {0}'.format(sensor_name))
-ax.loglog(H_gnd2tm_noctrl.abs(),label='No Control',color='k',linewidth=2,linestyle='-')
+ax.loglog(H_gnd2tm_noctrl.abs(),label='No Control',color='k',linewidth=2,linestyle='-',zorder=10)
 ax.loglog((H_gndsens2tm+H_gndsus2tm).abs(),label='Total',color='r',linewidth=6)
 ax.loglog(H_gndsus2tm.abs(),label='Ps/(1+G) (Suspension Contrib.)',color='b',linewidth=2,linestyle='--')
 ax.loglog(H_gndsens2tm.abs(),label='G/(1+G) (Sensor Contrib.)',color='g',linewidth=2,linestyle='--')
