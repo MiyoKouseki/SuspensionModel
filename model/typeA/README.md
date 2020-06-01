@@ -10,8 +10,8 @@ VISのモデル計算には、Mathematica, Matlab, Python を使う。振り子�
 
 | ファイル | 説明 |
 | --- | --- |
-| **./susmodel.mat** | 振り子の状態空間モデル。"TypeA20180429mdl.mat" からコピーした。|
-| **./controlmodel.slx** | Simulinkの制御モデル。"TypeA_siso180515.slx" からコピーした。|
+| **./etmx.mat**|'ETMXwoHLmdl_realparams.mat'からコピーした。ETMXに関係する実際のパラメータが格納されている。|
+| **./controlmodel.slx** | 'typeAsimctrl_NB.slx' からコピーした。制御モデル。|
 |**./main.m** | 閉ループ伝達関数を出力する。./param/param_*.mat ファイルに記述されているフィルターの情報を制御モデルに代入し、制御ループを閉じた状態でのABCD行列を計算し、./linmod 以下に mat ファイルを保存する。ちなみに、param_noctrl.m は TypeA_paramNoCtrl180517.m からコピーした。|
 | **./main.py** | Pythonのメインファイル。 main.m で生成されたABCD行列を元にしてプロットするだけの関数。|
 

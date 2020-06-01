@@ -2,50 +2,54 @@
 %% Initialize 
 clear all;  % Clear workspace
 %close all;  % Close plot windows
-addpath('../../utils');  % Add path to utilities
+%addpath('../../utils');  % Add path to utilities
 addpath('./param');  % Add path to utilities
-
+addpath(genpath('../../utils/dev'))
+addpath(genpath('../../utils/common'))
 
 %% Import susmodel
 matfile='susmodel';
-matfile='typeA_woHL_180519mdl'
+matfile='typeA_woHL_180519mdl';
+matfile='etmx';
+addpath(genpath('/Applications/MATLAB_R2018b.app/toolbox/control/ctrlmodels'))
+savepath
 load([matfile,'.mat']);
 
 
 %% Read and Save the No Control Configurations
-param_noctrl; 
+%param_noctrl; 
 mdlfile = 'controlmodel';
 linss = linmod(mdlfile);
-save('./linmod/noctrl.mat','linss');
-%% Read and Save the IP_dcDAMP Configurations
-param_ipdcdamp; 
-mdlfile = 'controlmodel';
-linss = linmod(mdlfile);
-save('./linmod/ipdcdamp.mat','linss');
-servoIPL_st = struct(servoIPL);
-save('./servo/servoIPL.mat','servoIPL_st')
-%
-gainIPL = 0;
-mdlfile = 'controlmodel';
-linss = linmod(mdlfile);
-save('./linmod/ipdcdamp_oltf.mat','linss');
-
-%%
-%% Read and Save the IP_dcDAMP Configurations
-param_ipdcbfdamp; 
-mdlfile = 'controlmodel';
-linss = linmod(mdlfile);
-save('./linmod/ipdcbfdamp.mat','linss');
-%servoIPL_st = struct(servoIPL);
-servoBFL_st = struct(servoBFL);
-%save('./servo/servoIPL.mat','servoIPL_st')
-save('./servo/servoBFL.mat','servoBFL_st')
-%
-gainIPL = 0;
-gainBFL = 0;
-mdlfile = 'controlmodel';
-linss = linmod(mdlfile);
-save('./linmod/ipdcbfdamp_oltf.mat','linss');
+save('./linmod/woHL.mat','linss');
+% %% Read and Save the IP_dcDAMP Configurations
+% param_ipdcdamp; 
+% mdlfile = 'controlmodel';
+% linss = linmod(mdlfile);
+% save('./linmod/ipdcdamp.mat','linss');
+% servoIPL_st = struct(servoIPL);
+% save('./servo/servoIPL.mat','servoIPL_st')
+% %
+% gainIPL = 0;
+% mdlfile = 'controlmodel';
+% linss = linmod(mdlfile);
+% save('./linmod/ipdcdamp_oltf.mat','linss');
+% 
+% %%
+% %% Read and Save the IP_dcDAMP Configurations
+% param_ipdcbfdamp; 
+% mdlfile = 'controlmodel';
+% linss = linmod(mdlfile);
+% save('./linmod/ipdcbfdamp.mat','linss');
+% %servoIPL_st = struct(servoIPL);
+% servoBFL_st = struct(servoBFL);
+% %save('./servo/servoIPL.mat','servoIPL_st')
+% save('./servo/servoBFL.mat','servoBFL_st')
+% %
+% gainIPL = 0;
+% gainBFL = 0;
+% mdlfile = 'controlmodel';
+% linss = linmod(mdlfile);
+% save('./linmod/ipdcbfdamp_oltf.mat','linss');
 
 %% Main
 in_name = strrep(linss.InputName, [mdlfile,'/'],'');
