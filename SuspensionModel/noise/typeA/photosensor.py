@@ -1,5 +1,3 @@
-from scipy.interpolate import interp1d
-from scipy import signal
 import numpy as np
 import matplotlib.pyplot as plt
 from gwpy.frequencyseries import FrequencySeries
@@ -8,7 +6,8 @@ import astropy.units as u
 from importlib.resources import open_text
 from . import data
 
-# MN/IM-PS
+
+# ------------------------------------------------------------------------------
 def reflective_photosensor(dof):
     '''
     '''
@@ -28,9 +27,17 @@ def reflective_photosensor(dof):
             'R':'K1:VIS-ETMX_MN_PSDAMP_R_IN1_DQ',
             'P':'K1:VIS-ETMX_MN_PSDAMP_P_IN1_DQ',
             'Y':'K1:VIS-ETMX_MN_PSDAMP_Y_IN1_DQ'}
-    i = _dofs.index(dof)+1
-    freq, value = noise[:,0],noise[:,i]
-    ps_yaw = FrequencySeries(value,frequencies=freq,
-                             name=dofs[dof],
-                             unit='rad/Hz(1/2)')*1e-6
-    return ps_yaw
+
+    if not dof in _dofs:
+        raise ValueError('Invalid dof: {0}. Please chose in {1}'.\
+                         format(dof,_dofs))
+
+    if dof in ['R','P','Y']:
+        unit = 'rad/Hz(1/2)'
+    else:
+        unit = 'm/Hz(1/2)'
+    
+    i = _dofs.index(dof) + 1
+    noise = FrequencySeries(noise[:,i],frequencies=noise[:,0],
+                            name=dofs[dof],unit='rad/Hz(1/2)')*1e-6
+    return noise

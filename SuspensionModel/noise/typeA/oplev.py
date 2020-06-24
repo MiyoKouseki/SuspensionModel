@@ -1,31 +1,33 @@
-from scipy.interpolate import interp1d
-from scipy import signal
 import numpy as np
-import matplotlib.pyplot as plt
+
 from gwpy.frequencyseries import FrequencySeries
 import astropy.units as u
 
 from importlib.resources import open_text
 from . import data
 
-
+# ------------------------------------------------------------------------------
 def oplev(dof):
     '''
     '''
-    freq = np.logspace(-3,2,1000)    
-    if dof in ['TML','MNL']:
-        value = np.ones(1000)*1e-9
-        oplev = FrequencySeries(value,frequencies=freq,
-                                name='Oplev_Long',
-                                unit='m/Hz(1/2)')
-    elif dof in ['TMP','TMY','MNP','MNY']:        
-        value = np.ones(1000)*1e-9
-        oplev = FrequencySeries(value,frequencies=freq,
-                                name='Oplev_Tilt',
-                                unit='rad/Hz(1/2)')
-    else:
-        raise ValueError('Invalid dof {0}'.format(dof))
+    num = 1000
+    freq = np.logspace(-3,2,num)
     
-    return oplev
+    _dofs = ['TML','MNL','TMP','TMY','MNP','MNY']
+    
+    if dof in ['TML','MNL','IML']:
+        value = np.ones(num)*1e-9
+        unit = 'm/Hz(1/2)'
+    elif dof in ['TMP','TMY','MNP','MNY','IMP','IMY']:        
+        value = np.ones(1000)*1e-9
+        unit = 'rad/Hz(1/2)'        
+    else:
+        raise ValueError('Invalid dof {0}. Please chose in {1}'.\
+                         format(dof,_dofs))
+                
+    noise = FrequencySeries(value,frequencies=freq,
+                            name='OPLEV_{0}'.format(dof),
+                            unit=unit)
+    return noise
 
 
