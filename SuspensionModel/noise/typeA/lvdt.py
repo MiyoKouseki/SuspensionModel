@@ -43,7 +43,7 @@ def _bf_lvdt(dof):
     freq, value = noise[:,0],noise[:,1]
     lvdt = FrequencySeries(value[2:],frequencies=freq[2:],
                            name='unkwon',
-                           unit='m/Hz(1/2)')#*1e-6
+                           unit='m/Hz(1/2)')
     if dof in ['BFL','BFT',]:
         lvdt = lvdt/np.sqrt(3.0/2.0)
     elif dof in ['BFV']:
@@ -55,9 +55,10 @@ def _bf_lvdt(dof):
         Y2L = 440e-3*(u.m/u.rad)        
         lvdt = lvdt/np.sqrt(3.0)/Y2L
     else:
-        raise ValueError('Invalid dof {0}'.format(dof))    
+        raise ValueError('Invalid dof {0}'.format(dof))
     lvdt.name = 'LVDT_{0}'.format(dof)
     return lvdt
+
 
 def _lvdt(dof=None):
     '''
