@@ -11,26 +11,6 @@
 
 The original noise data are copied from Fuji-kun's working space according to his Matlab script[1]. However, actuator noise is listed because he did not use. This issue and the other are listed in 'Remainning Issues' below.
 
-
-## Usage 
-```
-from SuspensionModel.model.typeA import noise
-from numpy as np
-
-freq = np.logspace(-2,3,1000)
-
-# sensor noise
-mn_l = noise.photosensor(freq, 'MN','L')
-ip_p = noise.ipgas_lvdt(freq, 'IP','P')
-gas_f0 = noise.ipgas_lvdt(freq, 'GAS','F0')
-bf_t = noise.bf_lvdt(freq, 'BF','T')
-tm_l = noise.oplev(freq, 'TM','L')
-
-# actuator noise
-...
-
-```
-
 ## Typical Noise Data
 ### ipgas_lvdt.dat
 * Copied from `LVDTnoiseADC_disp.dat` [2]
@@ -43,7 +23,6 @@ tm_l = noise.oplev(freq, 'TM','L')
 ### ps_6dof.txt
 * Copied from `ETMX_MN_PS_noise_level_20191107.txt` [4]
 * When and how was this data taken?
-
 
 
 ## Remainning Issues
