@@ -8,7 +8,8 @@ addpath('./param');  % Add path to utilities
 
 %% Import susmodel
 matfile='susmodel';
-matfile='typeA_woHL_180519mdl'
+matfile='ETMXmdl_realparams'
+matfile='etmx'
 load([matfile,'.mat']);
 
 
@@ -17,6 +18,7 @@ param_noctrl;
 mdlfile = 'controlmodel';
 linss = linmod(mdlfile);
 save('./linmod/noctrl.mat','linss');
+
 %% Read and Save the IP_dcDAMP Configurations
 param_ipdcdamp; 
 mdlfile = 'controlmodel';

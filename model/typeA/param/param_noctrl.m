@@ -21,11 +21,11 @@ gain_actIPT = 1./0.0049;
 gain_actIPY = 1./0.009;
 
 % GAS
-gain_actGASF0 = 1./4.9922e-4;
-gain_actGASF1 = 1./6.1190e-4;
-gain_actGASF2 = 1./7.6050e-4;
-gain_actGASF3 = 1./9.9399e-4;
-gain_actGASBF = 1./0.0014;
+gain_actF0GAS = 1./4.9922e-4;
+gain_actF1GAS = 1./6.1190e-4;
+gain_actF2GAS = 1./7.6050e-4;
+gain_actF3GAS = 1./9.9399e-4;
+gain_actBFGAS = 1./0.0014;
 
 % BF
 gain_actBFL = 1./0.0073;
@@ -93,17 +93,17 @@ gainHieIPL = 0;
 gainHieIPY = 0;
 
 %% CONTROL SERVO GAS 
-servoGASF0 = 0;
-servoGASF1 = 0;
-servoGASF2 = 0;
-servoGASF3 = 0;
-servoGASBF = 0;
+servoF0GAS = 0;
+servoF1GAS = 0;
+servoF2GAS = 0;
+servoF3GAS = 0;
+servoBFGAS = 0;
 
-gainGASF0 = 0;
-gainGASF1 = 0;
-gainGASF2 = 0;
-gainGASF3 = 0;
-gainGASBF = 0;
+gainF0GAS = 0;
+gainF1GAS = 0;
+gainF2GAS = 0;
+gainF3GAS = 0;
+gainBFGAS = 0;
 
 %% CONTROL SERVO BF
 servoBFL = 0;
