@@ -15,6 +15,17 @@ VISのモデル計算には、Mathematica, Matlab, Python を使う。振り子�
 |**./main.m** | 閉ループ伝達関数を出力する。./param/param_*.mat ファイルに記述されているフィルターの情報を制御モデルに代入し、制御ループを閉じた状態でのABCD行列を計算し、./linmod 以下に mat ファイルを保存する。ちなみに、param_noctrl.m は TypeA_paramNoCtrl180517.m からコピーした。|
 | **./main.py** | Pythonのメインファイル。 main.m で生成されたABCD行列を元にしてプロットするだけの関数。|
 
+### slx, mat
+svn 3026
+
+* ./check_exportvsmake.m : SUMCONが出力したABCD行列をSimulinkモデルに変換して、それが手作りのモデルと一致するか確認する。
+*  ./ETMY_exporttest.m : SUMCONが出力したABCD行列。
+*   ./hoge.slx : ./ETMY_exporttest.m から生成したSimulinkモデル。input 81, output 162 の剛体モデルの箱。 
+* ./ETMX.slx : input81,output162 の剛体モデルの箱。これも自動生成したと思われる。  
+* ./ETMX.mat：?
+* TypeA_siso180515_export.slx : SVN にはなかったが、Dropboxにはあった。入力135、出力270の剛体モデルの箱。 HLができてる。
+* 
+
 
 ## 振り子の状態空間モデル(susmodel.mat)
 
