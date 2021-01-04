@@ -9,13 +9,13 @@ addpath('./param');  % Add path to utilities
 %% Import susmodel
 matfile='susmodel';
 matfile='ETMXmdl_realparams';
-matfile='etmx';
+matfile='etmx_';
 load([matfile,'.mat']);
 
 
 %% Read and Save the No Control Configurations
 param_noctrl; 
-mdlfile = 'controlmodel';
+mdlfile = 'controlmodel_';
 linss = linmod(mdlfile);
 save('./linmod/noctrl.mat','linss');
 
