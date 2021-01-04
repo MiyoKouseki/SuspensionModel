@@ -8,8 +8,8 @@ addpath('./param');  % Add path to utilities
 
 %% Import susmodel
 matfile='susmodel';
-matfile='ETMXmdl_realparams'
-matfile='etmx'
+matfile='ETMXmdl_realparams';
+matfile='etmx';
 load([matfile,'.mat']);
 
 
