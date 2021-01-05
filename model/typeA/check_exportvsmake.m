@@ -7,12 +7,12 @@ addpath('./sumcon');
 addpath('./param');
 addpath('./controlmodel');
 %% 
-ETMY_exporttest;   % State-space model converted from SUMCON
+test_180429_20K;   % State-space model converted from SUMCON
 % case 1 : 
-% sys1 = ss(ssA,ssB,ssC,ssD,'InputName',varinput,'OutputName',varoutput);
+sys1 = ss(ssA,ssB,ssC,ssD,'InputName',varinput,'OutputName',varoutput);
 % case 2 : 
 constructsimmodel(...   % CONSTRUCT SIMUKINK BLOCK MODEL
-    'hoge',...         % model name
+    'test_180429_20K',...         % model name
     sys1,...                   % state-space model
     'sys1',...                  % state-space model name
     varinput,...              % input variables
