@@ -34,6 +34,7 @@ nin = strcmp(sys_safe.InputName,inv);
 nout = strcmp(sys_safe.OutputName,outv);
 [mag,phs] = mybode(sys_safe(nout,nin),freq);
 mag = mag.*omega.*omega; % because the input was acc.
+phs = rad2deg(wrapToPi(deg2rad(phs) - pi));
 
 fig = figure;
 subplot(5,1,[1 2 3]);
@@ -64,4 +65,4 @@ set(gca,'YTick',-180:90:180)
 positionarg=[50, 50, 850, 650];
 set(fig,'Position', positionarg);
 set(fig,'Color','white');
-export_fig('hoge.png')
+export_fig('example.png')
