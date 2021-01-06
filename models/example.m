@@ -9,12 +9,14 @@ addpath('../utils');
 
 %% 1. Import susmodel from SUMCON
 addpath('./sumcon/matlab');
-sc_typeA_wHL;
+sus_typeA;
+%sus_typeB;
 sys1 = ss(ssA,ssB,ssC,ssD,'InputName',varinput,'OutputName',varoutput);
 
 %% 2. Read controller model
 addpath('./controllers');
-mdlfile = 'ctrl_typeA_wHL';
+mdlfile = 'ctrl_typeA';
+%mdlfile = 'ctrl_typeB';
 
 %% 3. Read controll parameter
 addpath('./parameters');
