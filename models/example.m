@@ -6,22 +6,25 @@
 clear all;  % Clear workspace
 close all;  % Close plot windows
 addpath('../utils');
-
+    
 %% 1. Import susmodel from SUMCON
 addpath('./sumcon/matlab');
-sus_typeA;
-%sus_typeB;
+%sus_typeA;
+%sus_BS;
+sus_PRM;
 sys1 = ss(ssA,ssB,ssC,ssD,'InputName',varinput,'OutputName',varoutput);
 
 %% 2. Read controller model
 addpath('./controllers');
-mdlfile = 'ctrl_typeA';
+%mdlfile = 'ctrl_typeA';
 %mdlfile = 'ctrl_typeB';
-
+mdlfile = 'ctrl_typeBp';
 %% 3. Read controll parameter
 addpath('./parameters');
-typeA_safe;
-linss = linmod(mdlfile); 
+%typeA_safe;
+%typeB_safe;
+typeBp_safe;
+linss = linmod(mdlfile);
 invl = strrep(linss.InputName, [mdlfile,'/'],'');
 outvl = strrep(linss.OutputName,[mdlfile,'/'],'');
 sys_safe = ss(linss.a,linss.b,linss.c,linss.d,'inputname',invl,'outputname',outvl);
@@ -30,13 +33,18 @@ sys_safe = ss(linss.a,linss.b,linss.c,linss.d,'inputname',invl,'outputname',outv
 freq = logspace(-2,2,1001);
 omega = freq.*(2.0*pi);
 
-inv = 'accGndL';
-outv = 'dispTML';
+%inv = 'accGndL';
+%outv = 'dispTML';
+inv = 'accLGND';
+outv = 'LTM';
+
 nin = strcmp(sys_safe.InputName,inv);
 nout = strcmp(sys_safe.OutputName,outv);
 [mag,phs] = mybode(sys_safe(nout,nin),freq);
 mag = mag.*omega.*omega; % because the input was acc.
 phs = rad2deg(wrapToPi(deg2rad(phs) - pi));
+%mag = mag.*omega; % because the input was acc.
+%phs = rad2deg(wrapToPi(deg2rad(phs) + pi/2));
 
 fig = figure;
 subplot(5,1,[1 2 3]);

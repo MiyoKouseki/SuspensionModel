@@ -3,16 +3,16 @@ clear all;  % Clear workspace
 close all;  % Close plot windows
 
 addpath('../../utils');  % Add path to utilities
-addpath('./sumcon');
-addpath('./param');
-addpath('./controlmodel');
+addpath('./sumcon/matlab');
+addpath('./parameters');
+addpath('./controllers');
 %% 
-test_180429_20K;   % State-space model converted from SUMCON
+sus_PRM;   % State-space model converted from SUMCON
 % case 1 : 
 sys1 = ss(ssA,ssB,ssC,ssD,'InputName',varinput,'OutputName',varoutput);
 % case 2 : 
 constructsimmodel(...   % CONSTRUCT SIMUKINK BLOCK MODEL
-    'test_180429_20K',...         % model name
+    'tmp',...         % model name
     sys1,...                   % state-space model
     'sys1',...                  % state-space model name
     varinput,...              % input variables
