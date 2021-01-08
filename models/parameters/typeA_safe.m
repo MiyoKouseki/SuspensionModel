@@ -14,45 +14,45 @@ pp=2*pi;
 %% ACTUATOR NORMALIZATION
 % Normalize the actuators using local sensors at 0 Hz
 % F0
-gain_actIPL = 1./0.0049;
-gain_actIPT = 1./0.0049;
-gain_actIPY = 1./0.009;
+gain_actIPL = 1;
+gain_actIPT = 1;
+gain_actIPY = 1;
 
 % GAS
-gain_actF0GAS = 1./4.9922e-4;
-gain_actF1GAS = 1./6.1190e-4;
-gain_actF2GAS = 1./7.6050e-4;
-gain_actF3GAS = 1./9.9399e-4;
-gain_actBFGAS = 1./0.0014;
+gain_actF0GAS = 1;
+gain_actF1GAS = 1;
+gain_actF2GAS = 1;
+gain_actF3GAS = 1;
+gain_actBFGAS = 1;
 
 % BF
-gain_actBFL = 1./0.0073;
-gain_actBFT = 1./0.0073;
-gain_actBFV = 1./0.0029;
-gain_actBFR = 1./0.0155;
-gain_actBFP = 1./0.0155;
-gain_actBFY = 1./3.8733;
+gain_actBFL = 1;
+gain_actBFT = 1;
+gain_actBFV = 1;
+gain_actBFR = 1;
+gain_actBFP = 1;
+gain_actBFY = 1;
 
 % MN
-gain_actMNL = 1./8.0767e-4;
-gain_actMNT = 1./8.0767e-4;
-gain_actMNV = 1./2.8364e-5;
-gain_actMNR = 1./0.1286;
-gain_actMNP = 1./0.1286;
-gain_actMNY = 1./0.3862;
+gain_actMNL = 1;
+gain_actMNT = 1;
+gain_actMNV = 1;
+gain_actMNR = 1;
+gain_actMNP = 1;
+gain_actMNY = 1;
 
 % IM
-gain_actIML = 1./0.0020;
-gain_actIMT = 1./0.0020;
-gain_actIMV = 1./3.1558e-5;
-gain_actIMR = 1./0.1288;
-gain_actIMP = 1./0.1290;
-gain_actIMY = 1./0.4258;
+gain_actIML = 1;
+gain_actIMT = 1;
+gain_actIMV = 1;
+gain_actIMR = 1;
+gain_actIMP = 1;
+gain_actIMY = 1;
 
 % TM
-gain_actTML = 1./0.0042;
-gain_actTMP = 1./0.1385;
-gain_actTMY = 1./0.5427;
+gain_actTML = 1;
+gain_actTMP = 1;
+gain_actTMY = 1;
 
 %% COUPRING MATRIX
 % Diagonal part
@@ -62,7 +62,6 @@ cMat_IM = eye(6);
 cMat_TM = eye(3);
 
 % Non-diagonal part
-
 
 %% CONTROL SETTINGS
 % ----------------------------------------------------------------------
@@ -224,101 +223,3 @@ gainOL_TMY = 0;
 
 servoISC_TML = 0;
 gainISC_TML = 0;
-
-%% OLD REFS
-%{
-% F0 (Normalized with LVDT signals)
-gain_actLF0 = 1./0.0049;
-gain_actTF0 = 1./0.0050;
-gain_actYF0 = 1./0.0092;
-
-% GAS (Normalzed with LVDT signals)
-gain_actGASF0 = 1./4.9922e-4;
-gain_actGASF1 = 1./6.119e-4;
-gain_actGASF2 = 1./7.605e-4;
-gain_actGASF3 = 1./9.94e-4;
-gain_actGASBF = 1./0.0014;
-
-% BF
-gain_actLBF = 1./0.0073;
-gain_actTBF = 1./0.0074;
-gain_actVBF = 1./0.0029;
-gain_actRBF = 1./0.0155;
-gain_actPBF = 1./0.0155;
-gain_actYBF = 1./5.1460*1.333;
-
-% GEOPHONE RESPONSES
-% georesp  = zpk([-2.13+1i*5.19;-2.13-1i*5.19],[0;0],1);
-% vel2disp = zpk([],0,1);
-
-% BLENDING FILTERS WITH GEOPHONE RESPONSES
-% blend_LVDT = blend_LP;
-% blend_GEO  = minreal(blend_HP*georesp*vel2disp);
-
-% PLOT 1
-% freq1=logspace(-3,2,1001);
-% mybodeplot({blend_LP,blend_HP,blend_LP+blend_HP},freq1,...
-%     {'Low-Pass','High-Pass','Sum'},'Blending filter');
-% export_fig('figure/typeB1proto_blending_150618.pdf')
-
-% PLOT 2
-% freq1=logspace(-3,2,1001);
-% mybodeplot({blend_LVDT,blend_GEO},freq1);
-
-%% SERVO FILTER
-% GENERAL SERVO
-% damping servo with 300 Hz cutoff
-% dampflt = myzpk(0,[3e2,3e2],9e4*pp);
-
-% damping servo with 10 Hz cutoff
-% dampflt = myzpk(0,[1e1,1e1],100);
-% DC + damping servo with G=400 at 0.1 mHz
-% dcdampflt = myzpk([1e-1;1e-1],[1e-4;1e1],10)...
-%           * myzpk([],[20;20],(20*pp)^2);
-
-% IP SERVO     
-ipservo  = myzpk([0.], [3., 3.], 300*pp);
-ipservoY = myzpk([0], [1.e0, 1.e0], 10*pp);
-bfservoY = myzpk([0], [0.3, 0.3], 5*pp);
-gasf0servo = myzpk([0], [5., 5.], 100*pp);
-
-% SERVO FILTER F0
-servoLF0 = ipservo;
-servoTF0 = ipservo;
-servoYF0 = ipservoY;
-
-% SERVO FILTER GAS
-servoGASF0 = gasf0servo;
-servoGASF1 = 0;
-servoGASF2 = 0;
-servoGASF3 = 0;
-servoGASBF = 0;
-
-% SERVO FILTER GAS
-servoLBF = 0;
-servoTBF = 0;
-servoVBF = 0;
-servoRBF = 0;
-servoPBF = 0;
-servoYBF = bfservoY;
-
-
-%% GAIN
-gainLF0 = -1;
-gainTF0 = -1;
-gainYF0 = -1;
-
-gainGASF0 = -1;
-gainGASF1 = 0;
-gainGASF2 = 0;
-gainGASF3 = 0;
-gainGASBF = 0;
-
-gainLBF = 0;
-gainTBF = 0;
-gainVBF = 0;
-gainRBF = 0;
-gainPBF = 0;
-gainYBF = -1;
-%}
-
