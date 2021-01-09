@@ -6,36 +6,57 @@
 clear all;  % Clear workspace
 close all;  % Close plot windows
 addpath('../utils');
-    
+optic = 'ETMX';
+%optic = 'BS';
+%optic = 'PR3';
+
 %% 1. Import susmodel from SUMCON
 addpath('./sumcon/matlab');
-%sus_typeA;
-%sus_BS;
-sus_PRM;
+run(strcat('sus_',optic,'.m'))
 sys1 = ss(ssA,ssB,ssC,ssD,'InputName',varinput,'OutputName',varoutput);
 
 %% 2. Read controller model
 addpath('./controllers');
-%mdlfile = 'ctrl_typeA';
-%mdlfile = 'ctrl_typeB';
-mdlfile = 'ctrl_typeBp';
-%% 3. Read controll parameter
 addpath('./parameters');
-%typeA_safe;
-%typeB_safe;
-typeBp_safe;
+
+if contains(['PRM','PR3','PR2'],optic)
+    mdlfile = 'ctrl_typeBp';
+    run('typeBp_safe.m');
+elseif contains(['BS','SRM','SR3','SR2'],optic)
+    mdlfile = 'ctrl_typeB';
+    run('typeB_safe.m');
+elseif contains(['ETMX','ETMY','ITMX','ITMY'],optic)
+    mdlfile = 'ctrl_typeA';
+    run('typeA_safe.m');
+end
+
+%% 3. Read controll parameter
 linss = linmod(mdlfile);
 invl = strrep(linss.InputName, [mdlfile,'/'],'');
 outvl = strrep(linss.OutputName,[mdlfile,'/'],'');
 sys_safe = ss(linss.a,linss.b,linss.c,linss.d,'inputname',invl,'outputname',outvl);
+save(strcat('./abcd/',optic,'_safe.mat'),'sys_safe')
 
 %% 4. Plot Transfer Functions
 freq = logspace(-2,2,1001);
 omega = freq.*(2.0*pi);
 
-inv = 'exc_IML';
+stage = 'IM';
+dof = 'L';
+inv = strcat('exc_',stage,dof);
 %inv = 'accGndL';
-outv = 'OSEM_IML';
+
+stage = 'IM';
+dof = 'L';
+if contains(['IM','MN'],stage)
+    if contains(['ETMX','ETMY','ITMX','ITMY'],optic)
+        sensor = 'PS';
+    else
+        sensor = 'OSEM';
+    end
+end
+
+outv = strcat(sensor,'_',stage,dof);
 %outv = 'dispTML'
 
 nin = strcmp(sys_safe.InputName,inv);
