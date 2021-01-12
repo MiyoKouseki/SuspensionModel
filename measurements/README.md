@@ -15,7 +15,7 @@
 |SRM | --- |
 |SR2 | --- |
 |SR3 | --- |
-|PRM | --- |
+|PRM | [klog#13540](http://klog.icrr.u-tokyo.ac.jp/osl/?r=13540) |
 |PR2 | --- |
 |PR3 | [klog#8634](http://klog.icrr.u-tokyo.ac.jp/osl/?r=8634)|
 |MCE | --- |

@@ -85,10 +85,10 @@ def plot_compliance(optic,stage,dofs):
 
 
 if __name__=='__main__':
-    plot_compliance('PR3','SF',['GAS'])
-    plot_compliance('PR3','BF',['GAS'])    
-    plot_compliance('PR3','BF',['L','T','V'])
-    plot_compliance('PR3','BF',['R','P','Y'])    
-    plot_compliance('PR3','IM',['L','T','V'])
-    plot_compliance('PR3','IM',['R','P','Y'])
-    plot_compliance('PR3','TM',['L','P','Y'])
+    plot_compliance('PRM','SF',['GAS'])
+    plot_compliance('PRM','BF',['GAS'])    
+    plot_compliance('PRM','BF',['L','T','V'])
+    plot_compliance('PRM','BF',['R','P','Y'])    
+    plot_compliance('PRM','IM',['L','T','V'])
+    plot_compliance('PRM','IM',['R','P','Y'])
+    plot_compliance('PRM','TM',['L','P','Y'])
