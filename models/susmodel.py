@@ -27,8 +27,8 @@ class SusModel():
         '''
         idx_from = np.where(self.inputname==start)[0][0]
         idx_to = np.where(self.outputname==end)[0][0]
-        print('From :',idx_from,self.inputname[idx_from])
-        print('To   :',idx_to,self.outputname[idx_to])
+        #print('From :',idx_from,self.inputname[idx_from])
+        #print('To   :',idx_to,self.outputname[idx_to])
         out = self.ss_mimo.returnScipySignalLTI()
         ss = out[idx_to][idx_from]
         self.ss_siso = control.ss(ss.A,ss.B,ss.C,ss.D)

@@ -30,8 +30,12 @@ def bode_measurement(optic,stage,dof):
     _from = 'K1:VIS-{0}_{1}_TEST_{2}_EXC'.format(optic,stage,dof)
 
     # These differencies should be eliminated..
-    if stage in ['IM','BF','IP','BF','SF']:
-        _to = 'K1:VIS-{0}_{1}_DAMP_{2}_IN1_DQ'.format(optic,stage,dof)
+    if optic=='PR2' and stage=='BF' and dof!='GAS':
+        _to = 'K1:VIS-{0}_{1}_DAMP_{2}_IN1'.format(optic,stage,dof)
+    elif optic=='PR2' and stage=='IM' and dof in ['L','R','P','Y']:
+        _to = 'K1:VIS-{0}_{1}_DAMP_{2}_IN1'.format(optic,stage,dof)        
+    elif stage in ['IP','SF','BF','IM']:
+        _to = 'K1:VIS-{0}_{1}_DAMP_{2}_IN1_DQ'.format(optic,stage,dof)        
     elif stage=='TM':
         _dict = {'L':'LEN','P':'PIT','Y':'YAW'}
         _to = 'K1:VIS-{0}_{1}_OPLEV_{2}_DIAG_DQ'.format(optic,stage,_dict[dof])
@@ -41,7 +45,7 @@ def bode_measurement(optic,stage,dof):
     _freq, _gain, _coh = meas.tf(_from,_to)
     return _freq, _gain, _coh
 
-def plot_compliance(optic,stage,dofs):
+def plot_compliance(optic,stage,dofs):    
     fig,ax = plt.subplots(3,3,sharex='col',sharey='row',figsize=(10,6))
     plt.subplots_adjust(hspace=0.1, wspace=0.15,
                         left=0.1, right=0.95,
@@ -77,7 +81,9 @@ def plot_compliance(optic,stage,dofs):
     ax[0][0].set_ylim(1e-4,1e2)
     ax[1][0].set_ylim(-181,181)
     ax[2][0].set_ylim(0,1)
-    plt.savefig('./figures/Compliance_{0}_{1}_{2}.png'.format(optic,stage,''.join(dofs)))
+    fname = './figures/Compliance_{0}_{1}_{2}.png'.format(optic,stage,''.join(dofs))
+    plt.savefig(fname)
+    print(fname)
     plt.close()
     
     # [1] Adjust the model data to the measured one. Note that the
@@ -85,6 +91,20 @@ def plot_compliance(optic,stage,dofs):
 
 
 if __name__=='__main__':
+    plot_compliance('PR2','SF',['GAS'])
+    plot_compliance('PR2','BF',['GAS'])    
+    plot_compliance('PR2','BF',['L','T','V'])
+    plot_compliance('PR2','BF',['R','P','Y'])    
+    plot_compliance('PR2','IM',['L','T','V'])
+    plot_compliance('PR2','IM',['R','P','Y'])
+    plot_compliance('PR2','TM',['L','P','Y'])
+    plot_compliance('PR3','SF',['GAS'])
+    plot_compliance('PR3','BF',['GAS'])    
+    plot_compliance('PR3','BF',['L','T','V'])
+    plot_compliance('PR3','BF',['R','P','Y'])    
+    plot_compliance('PR3','IM',['L','T','V'])
+    plot_compliance('PR3','IM',['R','P','Y'])
+    plot_compliance('PR3','TM',['L','P','Y'])
     plot_compliance('PRM','SF',['GAS'])
     plot_compliance('PRM','BF',['GAS'])    
     plot_compliance('PRM','BF',['L','T','V'])
