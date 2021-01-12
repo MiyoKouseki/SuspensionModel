@@ -19,7 +19,7 @@ def bode_model(optic,stage,dof):
         end = 'ctrl_typeBp/OpLev_{0}{1}'.format(stage,dof)
     else:
         raise ValueError('!')
-    freq = np.logspace(-2,1,1001)    
+    freq = np.logspace(-2,2,1001)    
     freq,gain = model.tf(start,end,freq)
     return freq, gain
 
@@ -45,27 +45,34 @@ def bode_measurement(optic,stage,dof):
     _freq, _gain, _coh = meas.tf(_from,_to)
     return _freq, _gain, _coh
 
-def plot_compliance(optic,stage,dofs):    
-    fig,ax = plt.subplots(3,3,sharex='col',sharey='row',figsize=(10,6))
+
+def bode(optic,stage,dof):
+    freq, gain = bode_model(optic,stage,dof)
+    _freq, _gain, _coh = bode_measurement(optic,stage,dof)
+    gain *= np.mean((np.abs(_gain)[:5]/np.abs(gain)[:5])) #[1]
+    # [1] Adjust the model data to the measured one. Note that the
+    #     data points in lower frequency are unreliable.    
+    return [freq,gain],[_freq,_gain,_coh]
+
+def plot4(data,titles,fname):
+    fig,ax = plt.subplots(3,4,sharex='col',sharey='row',figsize=(10,6))
     plt.subplots_adjust(hspace=0.1, wspace=0.15,
                         left=0.1, right=0.95,
                         top=0.88, bottom=0.1)
-
-    title = 'Compliance of {0}_{1}_{2}.png'.format(optic,stage,''.join(dofs))
-    plt.suptitle(title,fontsize=18)
-    for i,dof in enumerate(dofs[:3]):
-        freq, gain = bode_model(optic,stage,dof)
-        _freq, _gain, _coh = bode_measurement(optic,stage,dof)
-        gain *= np.mean((np.abs(_gain)[:5]/np.abs(gain)[:5])) #[1]
+            
+    for i in range(len(data)):
+        model, measurement = data[i]
+        freq, gain = model
+        _freq, _gain, _coh = measurement        
         ax[0][i].loglog(freq,np.abs(gain),'k-',label='Model')
         ax[0][i].loglog(_freq,np.abs(_gain),'ro',markersize=2,
                         label='Measurement')
         ax[1][i].semilogx(freq,np.rad2deg(np.angle(gain)),'k-')
         ax[1][i].semilogx(_freq,np.rad2deg(np.angle(_gain)),'ro',
                           markersize=2,label='Measured')
-        ax[0][i].set_title('{0} -> {1}'.format(dof,dof))
         ax[2][i].semilogx(_freq,_coh,'ro',markersize=2)
-        ax[1][i].set_xlim(1e-2,1e1)    
+        ax[0][i].set_title(titles[i])            
+        ax[1][i].set_xlim(1e-2,5e1)    
         ax[1][i].set_yticks(range(-180,181,90))
         ax[2][i].set_xlabel('Frequency [Hz]')
         ax[1][i].grid(which='major',color='black',linestyle='-')
@@ -74,41 +81,48 @@ def plot_compliance(optic,stage,dofs):
         ax[0][i].grid(which='minor',color='black',linestyle=':')
         ax[2][i].grid(which='major',color='black',linestyle='-')
         ax[2][i].grid(which='minor',color='black',linestyle=':')
-        ax[0][i].legend(loc='upper left')
+        ax[0][i].legend(loc='lower left',fontsize=5)
     ax[0][0].set_ylabel('Magnitude')
     ax[1][0].set_ylabel('Phase [Degree]')
     ax[2][0].set_ylabel('Coherence')
-    ax[0][0].set_ylim(1e-4,1e2)
+    ax[0][0].set_ylim(1e-5,1e2)
     ax[1][0].set_ylim(-181,181)
     ax[2][0].set_ylim(0,1)
-    fname = './figures/Compliance_{0}_{1}_{2}.png'.format(optic,stage,''.join(dofs))
     plt.savefig(fname)
     print(fname)
     plt.close()
-    
-    # [1] Adjust the model data to the measured one. Note that the
-    #     data points in lower frequency are unreliable.
+        
 
+def plot_compliance(optic,stage,dofs):
+    titles = ['{0} -> {1}'.format(dof,dof) for dof in dofs]
+    data = [bode(optic,stage,dof) for dof in dofs]
+    fname = './figures/Compliance_{0}_{1}{2}.png'.\
+      format(optic,stage,''.join(dofs))        
+    plot4(data,titles,fname)
+
+def plot_compliance_optics(optics,stage,dof):
+    titles = optics
+    data = [bode(optic,stage,dof) for optic in optics]
+    fname = './figures/Compliance_{0}_{1}{2}.png'.\
+      format('PRs',stage,dof)        
+    plot4(data,titles,fname)
+    
 
 if __name__=='__main__':
-    plot_compliance('PR2','SF',['GAS'])
-    plot_compliance('PR2','BF',['GAS'])    
-    plot_compliance('PR2','BF',['L','T','V'])
-    plot_compliance('PR2','BF',['R','P','Y'])    
-    plot_compliance('PR2','IM',['L','T','V'])
-    plot_compliance('PR2','IM',['R','P','Y'])
-    plot_compliance('PR2','TM',['L','P','Y'])
-    plot_compliance('PR3','SF',['GAS'])
-    plot_compliance('PR3','BF',['GAS'])    
-    plot_compliance('PR3','BF',['L','T','V'])
-    plot_compliance('PR3','BF',['R','P','Y'])    
-    plot_compliance('PR3','IM',['L','T','V'])
-    plot_compliance('PR3','IM',['R','P','Y'])
-    plot_compliance('PR3','TM',['L','P','Y'])
-    plot_compliance('PRM','SF',['GAS'])
-    plot_compliance('PRM','BF',['GAS'])    
-    plot_compliance('PRM','BF',['L','T','V'])
-    plot_compliance('PRM','BF',['R','P','Y'])    
-    plot_compliance('PRM','IM',['L','T','V'])
-    plot_compliance('PRM','IM',['R','P','Y'])
-    plot_compliance('PRM','TM',['L','P','Y'])
+   
+    plot_compliance_optics(['PR2','PR3','PRM'],'SF','GAS')
+    for dof in ['L','T','V','R','P','Y','GAS']:
+        plot_compliance_optics(['PR2','PR3','PRM'],'BF',dof)
+    for dof in ['L','T','V','R','P','Y']:
+        plot_compliance_optics(['PR2','PR3','PRM'],'IM',dof)
+    for dof in ['L','P','Y']:
+        plot_compliance_optics(['PR2','PR3','PRM'],'TM',dof)        
+        
+    for optic in ['PRM','PR2','PR3']:
+        plot_compliance(optic,'SF',['GAS'])
+        plot_compliance(optic,'BF',['GAS'])    
+        plot_compliance(optic,'BF',['L','T','V'])
+        plot_compliance(optic,'BF',['R','P','Y'])    
+        plot_compliance(optic,'IM',['L','T','V'])
+        plot_compliance(optic,'IM',['R','P','Y'])
+        plot_compliance(optic,'TM',['L','P','Y'])
