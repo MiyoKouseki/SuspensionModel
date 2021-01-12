@@ -6,9 +6,9 @@
 clear all;  % Clear workspace
 close all;  % Close plot windows
 addpath('../utils');
-optic = 'ETMX';
+%optic = 'ETMX';
 %optic = 'BS';
-%optic = 'PR3';
+optic = 'PR3';
 
 %% 1. Import susmodel from SUMCON
 addpath('./sumcon/matlab');
@@ -35,15 +35,13 @@ linss = linmod(mdlfile);
 invl = strrep(linss.InputName, [mdlfile,'/'],'');
 outvl = strrep(linss.OutputName,[mdlfile,'/'],'');
 sys_safe = ss(linss.a,linss.b,linss.c,linss.d,'inputname',invl,'outputname',outvl);
-save(strcat('./abcd/',optic,'_safe.mat'),'sys_safe')
+save(strcat('./abcd/',optic,'_safe.mat'),'linss')
 
 %% 4. Plot Transfer Functions
 freq = logspace(-2,2,1001);
 omega = freq.*(2.0*pi);
 
-stage = 'IM';
-dof = 'L';
-inv = strcat('exc_',stage,dof);
+inv = 'exc_IML'
 %inv = 'accGndL';
 
 stage = 'IM';
@@ -55,7 +53,6 @@ if contains(['IM','MN'],stage)
         sensor = 'OSEM';
     end
 end
-
 outv = strcat(sensor,'_',stage,dof);
 %outv = 'dispTML'
 
