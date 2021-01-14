@@ -7,8 +7,8 @@ clear all;  % Clear workspace
 close all;  % Close plot windows
 addpath('../utils');
 %optic = 'ETMX';
-%optic = 'BS';
-optic = 'PR2';
+optic = 'BS';
+%optic = 'PR2';
 
 %% 1. Import susmodel from SUMCON
 addpath('./sumcon/matlab');

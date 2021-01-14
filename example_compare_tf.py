@@ -4,22 +4,34 @@ import matplotlib.pyplot as plt
 from measurements.susdtt import SusDtt
 from models.susmodel import SusModel
 
+def sustype(optic):
+    if optic in ['PRM','PR2','PR3']:
+        return 'typeBp'
+    elif optic in ['BS','SRM','SR2','SR3']:
+        return 'typeB'        
+    elif optic in ['ETMX','ETMY','ITMX','ITMY']:
+        return 'typeA'
+    else:
+        raise ValueError('{0}'.format(optics))
+
 def bode_model(optic,stage,dof):    
     model = SusModel(optic)   
-    start = 'ctrl_typeBp/exc_{0}{1}'.format(stage,dof)
+    start = 'ctrl_{2}/exc_{0}{1}'.format(stage,dof,sustype(optic))
     
-    # These differencies should be eliminated..    
+    # These differencies should be eliminated..
     if stage=='IM':
-        end = 'ctrl_typeBp/OSEM_{0}{1}'.format(stage,dof)
+        end = 'ctrl_{2}/OSEM_{0}{1}'.format(stage,dof,sustype(optic))
     elif stage in ['SF','BF'] and dof=='GAS':
-        end = 'ctrl_typeBp/LVDT_{0}{1}'.format(stage,dof) 
+        end = 'ctrl_{2}/LVDT_{0}{1}'.format(stage,dof,sustype(optic))
+    elif stage in ['F0','F1','F2','F3'] and dof=='GAS':
+        end = 'ctrl_{2}/LVDT_{0}{1}'.format(stage,dof,sustype(optic))        
     elif stage=='BF':
-        end = 'ctrl_typeBp/LVDT_{0}{1}'.format(stage,dof)
+        end = 'ctrl_{2}/LVDT_{0}{1}'.format(stage,dof,sustype(optic))
     elif stage=='TM':
-        end = 'ctrl_typeBp/OpLev_{0}{1}'.format(stage,dof)
+        end = 'ctrl_{2}/OpLev_{0}{1}'.format(stage,dof,sustype(optic))
     else:
-        raise ValueError('!')
-    freq = np.logspace(-2,2,1001)    
+        raise ValueError('{0}'.format(stage))
+    freq = np.logspace(-2,2,1001)
     freq,gain = model.tf(start,end,freq)
     return freq, gain
 
@@ -33,8 +45,12 @@ def bode_measurement(optic,stage,dof):
     if optic=='PR2' and stage=='BF' and dof!='GAS':
         _to = 'K1:VIS-{0}_{1}_DAMP_{2}_IN1'.format(optic,stage,dof)
     elif optic=='PR2' and stage=='IM' and dof in ['L','R','P','Y']:
+        _to = 'K1:VIS-{0}_{1}_DAMP_{2}_IN1'.format(optic,stage,dof)
+    elif optic=='BS' and stage in ['F0','F1','BF']:
+        _to = 'K1:VIS-{0}_{1}_DAMP_{2}_IN1'.format(optic,stage,dof)
+    elif optic=='BS' and stage in ['IM'] and dof in ['L','T']:
         _to = 'K1:VIS-{0}_{1}_DAMP_{2}_IN1'.format(optic,stage,dof)        
-    elif stage in ['IP','SF','BF','IM']:
+    elif stage in ['IP','SF','BF','IM','F0','F1','F2','F3']:
         _to = 'K1:VIS-{0}_{1}_DAMP_{2}_IN1_DQ'.format(optic,stage,dof)        
     elif stage=='TM':
         _dict = {'L':'LEN','P':'PIT','Y':'YAW'}
@@ -91,7 +107,6 @@ def plot4(data,titles,fname):
     plt.savefig(fname)
     print(fname)
     plt.close()
-        
 
 def plot_compliance(optic,stage,dofs):
     titles = ['{0} -> {1}'.format(dof,dof) for dof in dofs]
@@ -109,16 +124,31 @@ def plot_compliance_optics(optics,stage,dof):
     
 
 if __name__=='__main__':
-   
-    plot_compliance_optics(['PR2','PR3','PRM'],'SF','GAS')
+    # For SRs
+    optics = ['BS','SR2','SR3','SRM']
+    for optic in optics[:1]:
+        plot_compliance(optic,'F0',['GAS'])
+        plot_compliance(optic,'F1',['GAS'])
+        plot_compliance(optic,'BF',['GAS'])    
+        plot_compliance(optic,'IM',['L','T','V'])
+        plot_compliance(optic,'IM',['R','P','Y'])
+        plot_compliance(optic,'TM',['L','P','Y'])
+    exit()
+    
+    #plot_compliance_optics(optics,'F0','GAS')
+    #exit()
+    
+    # For PRs
+    optics = ['PR2','PR3','PRM']
+    plot_compliance_optics(optics,'SF','GAS')
     for dof in ['L','T','V','R','P','Y','GAS']:
-        plot_compliance_optics(['PR2','PR3','PRM'],'BF',dof)
+        plot_compliance_optics(optics,'BF',dof)
     for dof in ['L','T','V','R','P','Y']:
-        plot_compliance_optics(['PR2','PR3','PRM'],'IM',dof)
+        plot_compliance_optics(optics,'IM',dof)
     for dof in ['L','P','Y']:
-        plot_compliance_optics(['PR2','PR3','PRM'],'TM',dof)        
+        plot_compliance_optics(optics,'TM',dof)        
         
-    for optic in ['PRM','PR2','PR3']:
+    for optic in optics:
         plot_compliance(optic,'SF',['GAS'])
         plot_compliance(optic,'BF',['GAS'])    
         plot_compliance(optic,'BF',['L','T','V'])
