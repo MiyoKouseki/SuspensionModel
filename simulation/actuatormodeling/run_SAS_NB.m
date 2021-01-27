@@ -1,6 +1,7 @@
 % Noise budget script for suspensions (checking actuation noises and saturations)
 %
 % Author: Yuta Michimura
+% Modified by Kouseki Miyo
 
 %% Add paths
 clear all
@@ -8,7 +9,7 @@ close all
 %findNbSVNroot;  % find the root of Simulink NB
 addpath(genpath('SimulinkNb'));
 addpath(genpath('NoiseModel'));
-%addpath(genpath([NbSVNroot 'Dev/Utils/']));
+addpath(genpath('Utils'));
 
 figdir = './results/';  % directory to save figures
 
@@ -34,7 +35,7 @@ noiseModel = 'SAS';
 IFO = 'K1';
 RSE = 'BRSE';
 MirName = 'ETM';    % ETM, BS, SRM, PRM, IMC
-ALS = 'on';    % on or off
+ALS = 'off';    % on or off
 
 % Dictionaries
 Filt = containers.Map;  % digital filter transfer functions [cnts/cnts]
@@ -149,7 +150,7 @@ if (strcmp(MirName,'ITM') || strcmp(MirName,'ETM')) && strcmp(ALS,'on')
     Noise('Quantum') = sqrt(shot.^2+rad.^2);
 end
 
-% Frequency noise
+% Frequency noise % ignore
 %IMCfreq = 8e-9*freq.^(-2)./(1+(2./freq).^(-8))/26.65;  % IMC frequency noise (assuming laser is completely following IMC) [/rtHz]
 %fid = fopen(['./requirements/',RSE,'/MCFrequencyNoiseRequirement.dat']);
 %data = textscan(fid, '%f,%f', 'CommentStyle','#', 'CollectOutput',true);
@@ -429,17 +430,20 @@ Filt('LSC') = myzpk('zpk',[20],[600],1e10/OptGain)*myzpk('zpk',[],[500 1],1);
 loopNames = {'Overall','TM','IM','MN'};
 SW = ones(1,length(loopNames));
 
+
+
+
 %% Plot noises, transfer functions
 % used for modeling report
 pleaseplot = 1; % make it 0 if you want to skip plotting
 if pleaseplot
    % print Simulink model
-%    try
-%        print(['-s',noiseModel],'-dpdf',[figdir,noiseModel,'.pdf']);
-%    catch
-%        open(noiseModel);
-%        print(['-s',noiseModel],'-dpdf',[figdir,noiseModel,'.pdf']);
-%    end
+   try
+       print(['-s',noiseModel],'-dpdf',[figdir,noiseModel,'.pdf']);
+   catch
+       open(noiseModel);
+       print(['-s',noiseModel],'-dpdf',[figdir,noiseModel,'.pdf']);
+   end
    % plot suspension transfer functions
    figure(10)
    if strcmp(MirName,'ITM') || strcmp(MirName,'ETM')
@@ -566,6 +570,18 @@ if pleaseplot
    ylim([1e-13,1e-9])
    set(gca,'YTick',logspace(-13,-9,5));
    saveas(gcf,[figdir,'MagneticGradientNoise.eps'],'epsc')
+   figure(95)
+   plotbode(freq,[Filt('MN'), Filt('IM'), Filt('TM'), Filt('LSC')])
+   legend({'MN','IM','TM','LSC'})
+   xlim([freq(1),freq(end)]);
+   set(gca,'XTick',logspace(log10(freq(1)),log10(freq(end)),log10(freq(end))-log10(freq(1))+1));
+   subplot(2,1,1)
+   ylabel('Gain [V/V, cnt/cnt]')
+   ylim([1e-4,1e4])
+   set(gca,'YTick',logspace(-4,4,9));
+   xlim([freq(1),freq(end)]);
+   set(gca,'XTick',logspace(log10(freq(1)),log10(freq(end)),log10(freq(end))-log10(freq(1))+1));
+   saveas(gcf,[figdir,MirName,'Filt.eps'],'epsc')
 end
 
 %% Plot openloop transfer function
@@ -593,9 +609,9 @@ plotbode(freq,OLTF);
 legend(loopNames{swact},loopNames{swtot});
 subplot(2,1,1)
 loglog([freq(1),freq(end)],[1,1],'k')
-ylim([1e-6,1e6]);
+ylim([1e-6,1e10]);
 xlim([freq(1),freq(end)]);
-set(gca,'YTick',logspace(-6,6,7));
+set(gca,'YTick',logspace(-6,10,9));
 set(gca,'XTick',logspace(log10(freq(1)),log10(freq(end)),log10(freq(end))-log10(freq(1))+1));
 title([MirName,' OLTF'])
 subplot(2,1,2)
