@@ -6,7 +6,6 @@
 %% Add paths
 clear all
 close all
-%findNbSVNroot;  % find the root of Simulink NB
 addpath(genpath('SimulinkNb/SimulinkNb'));
 addpath(genpath('SimulinkNb/NoiseModel'));
 addpath(genpath('SimulinkNb/Utils'));
