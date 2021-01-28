@@ -33,7 +33,7 @@ set(groot,'defaultAxesColorOrder',co)
 freq = logspace(-1,4,1000);
 noiseModel = 'SAS';
 IFO = 'K1';
-RSE = 'BRSE';
+RSE = 'BRSE'; 
 MirName = 'ETM';    % ETM, BS, SRM, PRM, IMC
 ALS = 'off';    % on or off
 
@@ -191,13 +191,15 @@ if strcmp(MirName,'Type-A')
 end
 
 % Coil-magnets and coil drivers
-CoilDriver('HighPower') = 40*2;    % Ohm;  See https://dcc.ligo.org/LIGO-T0900232, https://dcc.ligo.org/LIGO-D0902747
+%CoilDriver('HighPower') = 40*2;    % Ohm;  See https://dcc.ligo.org/LIGO-T0900232, https://dcc.ligo.org/LIGO-D0902747
+CoilDriver('HighPower') = 40*2*myzpk('zpk',[],[],1);    % Ohm;  See https://dcc.ligo.org/LIGO-T0900232, https://dcc.ligo.org/LIGO-D0902747
 Noise('HighPower') = 57e-9./freq+2.1e-9; % coil driver noise [V/rtHz]; See Figure 3 of https://dcc.ligo.org/LIGO-T080014
 R1 = 750; R2 = 3900; C = 0.68e-6;
 CoilDriver('LowPower') = myzpk('zpk',[1/(2*pi*C*R1)],[1/(2*pi*C*(R1+R2))],R2*2);  %Ohm; See https://dcc.ligo.org/LIGO-D070481, https://dcc.ligo.org/LIGO-T0900233
 R2 = 700;
 CoilDriver('LowPowerMod') = myzpk('zpk',[1/(2*pi*C*R1)],[1/(2*pi*C*(R1+R2))],R2*2);  %Ohm; modified version for Type-A MN and IM
 Noise('LowPower') = 170e-9./freq+6.4e-9; % coil driver noise [V/rtHz]; See https://dcc.ligo.org/LIGO-T0900233 (1/f noise at low frequency is assumed)
+Noise('LowPowerMod') = Noise('LowPower')
 Elec('Whitening') = myzpk('zpk',[1;1;1],[10;10;10],1);   % default
 Elec('MN_DeWhitening') = myzpk('zpk',[10;10;10],[1;1;1],1);   % default
 Elec('IM_DeWhitening') = myzpk('zpk',[10;10;10],[1;1;1],1);
@@ -214,15 +216,19 @@ if strcmp(MirName,'ITM') || strcmp(MirName,'ETM')
     RcoilMN = 2; % resistance of coil (from Miyamoto; estimated resistance at cryogenic from measured value at room temperature)
     RcoilIM = 2; % resistance of coil (from Miyamoto; estimated resistance at cryogenic from measured value at room temperature)
     RcoilTM = 0.6; % resistance of coil (from Miyamoto; estimated resistance at cryogenic from measured value at room temperature)
-    CoilDriver('MN') = CoilDriver('LowPowerMod')/1.33;  % 1.33 for voltage gain of Low power coil driver
-    CoilDriver('IM') = CoilDriver('LowPowerMod')/1.33;  % 1.33 for voltage gain of Low power coil driver
+    CoilDriver('MN') = CoilDriver('HighPower')%/1.33;  % 1.33 for voltage gain of Low power coil driver
+    CoilDriver('IM') = CoilDriver('HighPower')%/1.33;  % 1.33 for voltage gain of Low power coil driver
     CoilDriver('TM') = CoilDriver('LowPower');  % NO GAIN NEEDED FOR TM STAGE!!!
-    Coil('MN') = MNCoilN*0.433/(CoilDriver('MN')+RcoilMN);   % N/V; See https://gwdoc.icrr.u-tokyo.ac.jp/cgi-bin/private/DocDB/ShowDocument?docid=6476
-    Coil('IM') = IMCoilN*0.0159/(CoilDriver('IM')+RcoilIM);   % N/V; See http://gwdoc.icrr.u-tokyo.ac.jp/cgi-bin/private/DocDB/ShowDocument?docid=5938
-    Coil('TM') = TMCoilN*0.0015/(CoilDriver('TM')+RcoilTM);   % N/V; See http://gwdoc.icrr.u-tokyo.ac.jp/cgi-bin/private/DocDB/ShowDocument?docid=5938
-    Noise('MN_Coil') = Noise('LowPower');
-    Noise('IM_Coil') = Noise('LowPower');
-    Noise('TM_Coil') = Noise('LowPower');
+    %Coil('MN') = MNCoilN*0.433/(CoilDriver('MN')+RcoilMN);   % N/V; See https://gwdoc.icrr.u-tokyo.ac.jp/cgi-bin/private/DocDB/ShowDocument?docid=6476
+    %Coil('IM') = IMCoilN*0.0159/(CoilDriver('IM')+RcoilIM);   % N/V; See http://gwdoc.icrr.u-tokyo.ac.jp/cgi-bin/private/DocDB/ShowDocument?docid=5938
+    %Coil('TM') = TMCoilN*0.0015/(CoilDriver('TM')+RcoilTM);   % N/V; See http://gwdoc.icrr.u-tokyo.ac.jp/cgi-bin/private/DocDB/ShowDocument?docid=5938
+    Coil('MN') = MNCoilN*1.0/(CoilDriver('MN')+RcoilMN);   % N/V; 
+    Coil('IM') = IMCoilN*0.042/(CoilDriver('IM')+RcoilIM);   % N/V; 
+    Coil('TM') = TMCoilN*0.0015/(CoilDriver('TM')+RcoilTM);   % N/V; 
+
+    Noise('MN_Coil') = Noise('HighPower'); % for O4
+    Noise('IM_Coil') = Noise('HighPower'); % for O4
+    Noise('TM_Coil') = Noise('LowPower'); % for O4
 elseif strcmp(MirName,'PRM')
     Magnet('IM') = 8.78e5*pi*(10e-3/2)^2*10e-3;
     Magnet('TM') = 8.78e5*pi*(6e-3/2)^2*3e-3;
@@ -292,9 +298,13 @@ Filt('MN') = 0;  % default
 Susp('MN_TM') = 0;  % default
 Susp('MN_TM_fit') = 0; % default
 if strcmp(MirName,'ITM') || strcmp(MirName,'ETM')
-    Filt('MN') = myzpk('zpk',[1;2],[0;0],-0.5)*myzpk('zpk',[],[30 1],1);  % cnts/cnts
-    Filt('IM') = myzpk('zpk',[1;2],[0;0],-30)*myzpk('zpk',[],[50 1],1);  % cnts/cnts
+    %Filt('MN') = myzpk('zpk',[1;2],[0;0],-0.5)*myzpk('zpk',[],[30 1],1);  % cnts/cnts
+    %Filt('IM') = myzpk('zpk',[1;2],[0;0],-30)*myzpk('zpk',[],[50 1],1);  % cnts/cnts
+    %Filt('TM') = myzpk('zpk',[],[],1);  % cnts/cnts
+    Filt('MN') = myzpk('zpk',[1;2],[0;0],-1)*myzpk('zpk',[],[30 1],1);  % cnts/cnts
+    Filt('IM') = myzpk('zpk',[1;2],[0;0],-1)*myzpk('zpk',[],[50 1],1);  % cnts/cnts
     Filt('TM') = myzpk('zpk',[],[],1);  % cnts/cnts
+
     data = load('./suspensionTFs/TypeA_MN2TM.dat');
     gg = interp1(data(:,1), data(:,2), freq, 'linear');
     ph = interp1(data(:,1), data(:,3), freq, 'linear');
@@ -447,7 +457,8 @@ if pleaseplot
    % plot suspension transfer functions
    figure(10)
    if strcmp(MirName,'ITM') || strcmp(MirName,'ETM')
-     plotbode(freq,[Susp('TM_TM'),Susp('IM_TM'),Susp('MN_TM')])
+     %plotbode(freq,[Susp('TM_TM'),Susp('IM_TM'),Susp('MN_TM')])
+     plotbode(freq,[Susp('TM_TM')*Coil('TM'),Susp('IM_TM')*Coil('IM'),Susp('MN_TM')*Coil('MN')])
      legend({'TM to TM','IM to TM','MN to TM'})
    elseif strcmp(MirName,'BS') || strcmp(MirName,'PRM') || strcmp(MirName,'SRM')
      plotbode(freq,[Susp('TM_TM'),Susp('IM_TM')])
@@ -457,17 +468,23 @@ if pleaseplot
      legend({'TM to TM'})
    end   
    subplot(2,1,1)
-   ylabel('Gain [m/N]')
-   ylim([1e-9,1e1])
-   set(gca,'YTick',logspace(-9,1,11));
-   xlim([freq(1),freq(end)]);
-   set(gca,'XTick',logspace(log10(freq(1)),log10(freq(end)),log10(freq(end))-log10(freq(1))+1));
+   %ylabel('Gain [m/N]')
+   ylabel('Gain [m/V]')
+   %ylim([1e-9,1e1])
+   %set(gca,'YTick',logspace(-9,1,11));
+   ylim([1e-20,1e-2])
+   set(gca,'YTick',logspace(-20,-2,7));
+   %xlim([freq(1),freq(end)]);
+   %set(gca,'XTick',logspace(log10(freq(1)),log10(freq(end)),log10(freq(end))-log10(freq(1))+1));
+   xlim([1e-2,1e3]);
+   set(gca,'XTick',logspace(-2,3,6));
+
    saveas(gcf,[figdir,MirName,'Susp.eps'],'epsc')
    % plot coil driver I-V conversion factors
    figure(20)
    if strcmp(MirName,'ITM') || strcmp(MirName,'ETM')
-       plotbode(freq,[CoilDriver('TM'), CoilDriver('IM'), CoilDriver('MN')])
-       legend({'low power (TM)','low power modified (IM)','low power modified (MN)'})
+       plotbode(freq,[CoilDriver('LowPower'), CoilDriver('LowPowerMod'), CoilDriver('HighPower')])
+       legend({'low power ','low power modified ','high power'})
    elseif strcmp(MirName,'BS') || strcmp(MirName,'SRM')
        plotbode(freq,[CoilDriver('TM'), CoilDriver('IM')])
        legend({'low power (TM)','low power (IM)'})
@@ -611,7 +628,7 @@ subplot(2,1,1)
 loglog([freq(1),freq(end)],[1,1],'k')
 ylim([1e-6,1e10]);
 xlim([freq(1),freq(end)]);
-set(gca,'YTick',logspace(-6,10,9));
+set(gca,'YTick',logspace(-6,6,7));
 set(gca,'XTick',logspace(log10(freq(1)),log10(freq(end)),log10(freq(end))-log10(freq(1))+1));
 title([MirName,' OLTF'])
 subplot(2,1,2)
@@ -638,13 +655,14 @@ nb.sortModel();
 matlabNoisePlot(nb);
 
 figure(1)
-loglog(freq,TMDispReq,'b-');  % plot requirement
+idx = freq>10;
+loglog(freq(idx),TMDispReq(idx)*10,'k-');  % plot requirement
 ylim([1e-23,1e-10]);
-xlim([1e-1,1e3]);
+xlim([1e0,1e3]);
 set(gca,'YTick',logspace(-23,-10,14));
-set(gca,'XTick',logspace(-1,3,5));
+set(gca,'XTick',logspace(0,3,4));
 leg = legend(gca);
-legend({'Requirement (Safety 10)',leg.String{2:end}});    % Replace 'Measured' with 'Requirement'
+legend({strcat('bKAGRA Design (',RSE,')'),leg.String{2:end}});    % Replace 'Measured' with 'Requirement'
 set(legend(gca),'FontSize',8);
 if strcmp(MirName,'PRM') || strcmp(MirName,'SRM') || strcmp(MirName,'IMC')
     set(legend(gca),'Location','SouthWest');
@@ -660,7 +678,8 @@ end
 dlmwrite([figdir,MirName,'DispNoise.dat'],nbdata','delimiter','\t','precision',6);
 
 figure(2)
-loglog(freq,TMDispReq,'-','Color',[0 0.5 0]);  % plot requirement
+idx = freq>10;
+loglog(freq(idx),TMDispReq(idx),'k-');  % plot requirement
 ylim([1e-23,1e-10]);
 xlim([1e-1,1e3]);
 set(gca,'YTick',logspace(-23,-10,14));
@@ -686,7 +705,7 @@ set(legend(gca),'FontSize',8);
 if strcmp(MirName,'PRM') || strcmp(MirName,'SRM') || strcmp(MirName,'IMC')
     set(legend(gca),'Location','SouthWest');
 end
-saveas(gcf,[figdir,MirName,'MagneticNoise.png'])
+%saveas(gcf,[figdir,MirName,'MagneticNoise.png'])
 saveas(gcf,[figdir,MirName,'MagneticNoise.eps'],'epsc')
 
 nbTMdisp = nb;
