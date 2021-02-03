@@ -33,6 +33,14 @@ gain_actBFR = 1;
 gain_actBFP = 1;
 gain_actBFY = 1;
 
+% PF
+gain_actPFL = 1;
+gain_actPFT = 1;
+gain_actPFV = 1;
+gain_actPFR = 1;
+gain_actPFP = 1;
+gain_actPFY = 1;
+
 % MN
 gain_actMNL = 1;
 gain_actMNT = 1;
@@ -156,7 +164,35 @@ gainHieBFR = 0;
 gainHieBFP = 0;
 gainHieBFY = 0;
 
-%% CONTROL SERVO MT
+%% CONTROL SERVO PF
+servoPFL = 0;
+servoPFT = 0;
+servoPFV = 0;
+servoPFR = 0;
+servoPFP = 0;
+servoPFY = 0;
+gainPFL = 0;
+gainPFT = 0;
+gainPFV = 0;
+gainPFR = 0;
+gainPFP = 0;
+gainPFY = 0;
+
+servoOL_PFR = 0;
+servoOL_PFP = 0;
+servoOL_PFY = 0;
+gainOL_PFR = 0;
+gainOL_PFP = 0;
+gainOL_PFY = 0;
+
+servoHiePFL = 0;
+servoHiePFP = 0;
+servoHiePFY = 0;
+gainHiePFL = 0;
+gainHiePFP = 0;
+gainHiePFY = 0;
+
+%% CONTROL SERVO MN
 servoMNL = 0;
 servoMNT = 0;
 servoMNV = 0;

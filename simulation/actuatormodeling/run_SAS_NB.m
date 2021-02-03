@@ -224,7 +224,7 @@ if strcmp(MirName,'ITM') || strcmp(MirName,'ETM')
     %Coil('TM') = TMCoilN*0.0015/(CoilDriver('TM')+RcoilTM);   % N/V; See http://gwdoc.icrr.u-tokyo.ac.jp/cgi-bin/private/DocDB/ShowDocument?docid=5938
     Coil('MN') = MNCoilN*1.0/(CoilDriver('MN')+RcoilMN);   % N/V; 
     Coil('IM') = IMCoilN*0.042/(CoilDriver('IM')+RcoilIM);   % N/V; 
-    Coil('TM') = TMCoilN*0.0015/(CoilDriver('TM')+RcoilTM);   % N/V; 
+    Coil('TM') = TMCoilN*0.0015/(CoilDriver('TM')+RcoilTM);   % N/V;
 
     Noise('MN_Coil') = Noise('HighPower'); % for O4
     Noise('IM_Coil') = Noise('HighPower'); % for O4

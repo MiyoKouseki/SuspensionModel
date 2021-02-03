@@ -7,7 +7,7 @@ clear all;  % Clear workspace
 close all;  % Close plot windows
 addpath('../utils');
 optic = 'ETMY';
-optic = 'SRM';
+%optic = 'SRM';
 %optic = 'PR2';
 
 %% 1. Import susmodel from SUMCON
@@ -41,10 +41,10 @@ save(strcat('./abcd/',optic,'_safe.mat'),'linss')
 freq = logspace(-2,2,1001);
 omega = freq.*(2.0*pi);
 
-inv = 'exc_IML'
-%inv = 'accGndL';
+%inv = 'exc_BFL'
+inv = 'accGndV';
 
-stage = 'IM';
+stage = 'TM';
 dof = 'L';
 if contains(['IM','MN'],stage)
     if contains(['ETMX','ETMY','ITMX','ITMY'],optic)
@@ -52,9 +52,11 @@ if contains(['IM','MN'],stage)
     else
         sensor = 'OSEM';
     end
+elseif contains(['TM'],stage)
+    sensor = 'OpLev'
 end
 outv = strcat(sensor,'_',stage,dof);
-%outv = 'dispTML'
+outv = 'dispTMV'
 
 nin = strcmp(sys_safe.InputName,inv);
 nout = strcmp(sys_safe.OutputName,outv);
@@ -74,7 +76,7 @@ ylabel(ylabelarg,'FontSize',12,'FontWeight','bold','FontName','Times New Roman')
 set(gca,'FontSize',12,'FontName','Times New Roman')
 fg_y=0;
 if fg_y; ylim(ylimarg); end;
-ylim([1e-10 1e2]);
+ylim([1e-19 1e2]);
 xlim([freq(1),freq(end)])
 legendarg={'safe'};
 legend(legendarg)
@@ -92,3 +94,5 @@ positionarg=[50, 50, 850, 650];
 set(fig,'Position', positionarg);
 set(fig,'Color','white');
 export_fig('example.png')
+huge = vertcat(freq,phs)
+dlmwrite('data.txt',transpose(vertcat(freq,mag,phs)))
